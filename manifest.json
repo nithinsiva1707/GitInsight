@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "GitHub Portfolio Analyzer",
+  "version": "1.0",
+  "description": "Analyzes GitHub profiles and generates a portfolio score.",
+  "permissions": ["storage", "activeTab"],
+  "host_permissions": ["https://api.github.com/*"],
+  "content_scripts": [
+    {
+      "matches": ["https://github.com/*"],
+      "js": ["utils.js", "content.js"],
+      "css": ["styles.css"]
+    }
+  ]
+}

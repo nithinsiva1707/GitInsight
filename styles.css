@@ -1,0 +1,96 @@
+/* Container for the analyzer panel */
+#gh-analyzer-panel {
+    background-color: var(--color-canvas-default);
+    border: 1px solid var(--color-border-default);
+    border-radius: 6px;
+    margin-bottom: 16px;
+    padding: 16px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    color: var(--color-fg-default);
+    box-shadow: var(--color-shadow-medium);
+}
+
+.gha-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--color-border-muted);
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+}
+
+.gha-title {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+/* Score Circle */
+.gha-score-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.gha-score-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 4px solid var(--color-accent-emphasis);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* Breakdown Grid */
+.gha-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    font-size: 12px;
+}
+
+.gha-stat-card {
+    background: var(--color-canvas-subtle);
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid var(--color-border-muted);
+}
+
+.gha-label { color: var(--color-fg-muted); }
+.gha-value { font-weight: 600; display: block; }
+
+/* Suggestions Section */
+.gha-suggestions {
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top: 1px solid var(--color-border-muted);
+}
+
+.gha-suggestion-item {
+    font-size: 13px;
+    margin: 5px 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.gha-dot {
+    height: 6px;
+    width: 6px;
+    background-color: var(--color-attention-fg);
+    border-radius: 50%;
+}
+
+.gha-btn {
+    background-color: var(--color-btn-bg);
+    border: 1px solid var(--color-btn-border);
+    padding: 3px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.gha-btn:hover { background-color: var(--color-btn-hover-bg); }
