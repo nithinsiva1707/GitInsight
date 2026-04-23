@@ -101,11 +101,40 @@ const profileCompleteness = (profile) => {
 };
 
 const enrichReadmeData = async (username, repos) => {
-  const mapped = await runInBatches(repos, README_CONCURRENCY, async (repo) => {
-    const hasReadme = await githubService.checkReadmePresence(username, repo.name);
-    return { ...repo, hasReadme };
-  });
-  return mapped;
+  const mapped = [];
+  let rateLimitReached = false;
+
+  for (let i = 0; i < repos.length; i += README_CONCURRENCY) {
+    const chunk = repos.slice(i, i + README_CONCURRENCY);
+
+    if (rateLimitReached) {
+      mapped.push(...chunk.map((repo) => ({ ...repo, hasReadme: null })));
+      continue;
+    }
+
+    const chunkResults = await Promise.all(
+      chunk.map(async (repo) => {
+        try {
+          const hasReadme = await githubService.checkReadmePresence(username, repo.name);
+          return { ...repo, hasReadme };
+        } catch (error) {
+          if (error instanceof ApiError && error.code === "GITHUB_RATE_LIMIT") {
+            rateLimitReached = true;
+            return { ...repo, hasReadme: null };
+          }
+          throw error;
+        }
+      })
+    );
+
+    mapped.push(...chunkResults);
+  }
+
+  return {
+    repos: mapped,
+    readmeCoverage: repos.length ? roundTo((mapped.filter((repo) => typeof repo.hasReadme === "boolean").length / repos.length) * 100) : 100,
+    readmeChecksLimited: rateLimitReached
+  };
 };
 
 const fetchRawAnalysisData = async (username) => {
@@ -116,12 +145,12 @@ const fetchRawAnalysisData = async (username) => {
     throw new ApiError(500, "INVALID_USER_PAYLOAD", "GitHub returned invalid user payload");
   }
 
-  const enrichedRepos = await enrichReadmeData(user.login, repos);
+  const enriched = await enrichReadmeData(user.login, repos);
 
-  return { user, repos: enrichedRepos };
+  return { user, repos: enriched.repos, readmeCoverage: enriched.readmeCoverage, readmeChecksLimited: enriched.readmeChecksLimited };
 };
 
-const buildAnalysisPayload = ({ user, repos }) => {
+const buildAnalysisPayload = ({ user, repos, readmeCoverage, readmeChecksLimited }) => {
   const breakdown = {
     activity: scoreActivity(repos),
     quality: scoreQuality(repos),
@@ -140,7 +169,7 @@ const buildAnalysisPayload = ({ user, repos }) => {
   };
 
   const missingReadme = repos
-    .filter((repo) => !repo.hasReadme)
+    .filter((repo) => repo.hasReadme === false)
     .map((repo) => ({
       name: repo.name,
       stars: repo.stargazers_count,
@@ -178,10 +207,17 @@ const buildAnalysisPayload = ({ user, repos }) => {
         pushedAt: repo.pushed_at,
         hasReadme: repo.hasReadme
       }))
+    },
+    metadata: {
+      readmeCoveragePercent: readmeCoverage,
+      readmeChecksLimited
     }
   };
 
   payload.suggestions = generateSuggestions(payload);
+  if (readmeChecksLimited) {
+    payload.suggestions.push("GitHub rate limit reached during README checks; some documentation metrics are partial");
+  }
   return payload;
 };
 

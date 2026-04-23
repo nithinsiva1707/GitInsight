@@ -50,8 +50,10 @@ const scoreDocumentation = (repos, profile) => {
     return roundTo(profileScore);
   }
 
-  const withReadme = repos.filter((repo) => repo.hasReadme).length;
-  const readmeRatio = withReadme / repos.length;
+  const knownReadmeRepos = repos.filter((repo) => typeof repo.hasReadme === "boolean");
+  const withReadme = knownReadmeRepos.filter((repo) => repo.hasReadme).length;
+  // When readme checks are partial (e.g. API rate limiting), avoid penalizing unknown entries.
+  const readmeRatio = knownReadmeRepos.length ? withReadme / knownReadmeRepos.length : 0.6;
 
   const bioScore = profile.bio ? 100 : 40;
   const avatarScore = profile.avatar_url ? 100 : 0;
