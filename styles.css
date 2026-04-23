@@ -24,6 +24,15 @@
     font-weight: 600;
 }
 
+.gha-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.gha-content.gha-hidden {
+    display: none;
+}
+
 /* Score Circle */
 .gha-score-container {
     display: flex;

@@ -92,6 +92,17 @@ const waitForSidebar = (timeoutMs = 7000) => {
     });
 };
 
+const setupHideToggle = (panel) => {
+    const content = panel.querySelector(".gha-content");
+    const hideButton = panel.querySelector("#toggle-visibility-btn");
+    if (!content || !hideButton) return;
+
+    hideButton.addEventListener("click", () => {
+        const isHidden = content.classList.toggle("gha-hidden");
+        hideButton.textContent = isHidden ? "Unhide" : "Hide";
+    });
+};
+
 const injectAnalyzerUI = (data) => {
     if (document.getElementById("gh-analyzer-panel")) return;
 
@@ -101,48 +112,54 @@ const injectAnalyzerUI = (data) => {
     panel.innerHTML = `
         <div class="gha-header">
             <span class="gha-title">Portfolio Insights</span>
-            <button class="gha-btn" id="reanalyze-btn">Re-analyze</button>
-        </div>
-
-        <div class="gha-score-container">
-            <div class="gha-score-circle">${data.score}</div>
-            <div>
-                <div style="font-weight: 600;">Overall Rank</div>
-                <div style="font-size: 12px; color: var(--color-fg-muted);">${data.rank}</div>
+            <div class="gha-actions">
+                <button class="gha-btn" id="toggle-visibility-btn">Hide</button>
+                <button class="gha-btn" id="reanalyze-btn">Re-analyze</button>
             </div>
         </div>
 
-        <div class="gha-grid">
-            <div class="gha-stat-card">
-                <span class="gha-label">Activity</span>
-                <span class="gha-value">${data.breakdown.activity}%</span>
-            </div>
-            <div class="gha-stat-card">
-                <span class="gha-label">Docs</span>
-                <span class="gha-value">${data.breakdown.docs}%</span>
-            </div>
-            <div class="gha-stat-card">
-                <span class="gha-label">Quality</span>
-                <span class="gha-value">${data.breakdown.quality}%</span>
-            </div>
-            <div class="gha-stat-card">
-                <span class="gha-label">Consistency</span>
-                <span class="gha-value">${data.breakdown.consistency}%</span>
-            </div>
-        </div>
-
-        <div class="gha-suggestions">
-            <div style="font-weight: 600; font-size: 14px; margin-bottom: 8px;">Suggestions</div>
-            ${data.suggestions.map((s) => `
-                <div class="gha-suggestion-item">
-                    <span class="gha-dot"></span>
-                    <span>${s}</span>
+        <div class="gha-content">
+            <div class="gha-score-container">
+                <div class="gha-score-circle">${data.score}</div>
+                <div>
+                    <div style="font-weight: 600;">Overall Rank</div>
+                    <div style="font-size: 12px; color: var(--color-fg-muted);">${data.rank}</div>
                 </div>
-            `).join("")}
+            </div>
+
+            <div class="gha-grid">
+                <div class="gha-stat-card">
+                    <span class="gha-label">Activity</span>
+                    <span class="gha-value">${data.breakdown.activity}%</span>
+                </div>
+                <div class="gha-stat-card">
+                    <span class="gha-label">Docs</span>
+                    <span class="gha-value">${data.breakdown.docs}%</span>
+                </div>
+                <div class="gha-stat-card">
+                    <span class="gha-label">Quality</span>
+                    <span class="gha-value">${data.breakdown.quality}%</span>
+                </div>
+                <div class="gha-stat-card">
+                    <span class="gha-label">Consistency</span>
+                    <span class="gha-value">${data.breakdown.consistency}%</span>
+                </div>
+            </div>
+
+            <div class="gha-suggestions">
+                <div style="font-weight: 600; font-size: 14px; margin-bottom: 8px;">Suggestions</div>
+                ${data.suggestions.map((s) => `
+                    <div class="gha-suggestion-item">
+                        <span class="gha-dot"></span>
+                        <span>${s}</span>
+                    </div>
+                `).join("")}
+            </div>
         </div>
     `;
 
     mountPanel(panel);
+    setupHideToggle(panel);
 
     const button = document.getElementById("reanalyze-btn");
     if (button) {
@@ -162,12 +179,14 @@ const injectErrorUI = (message) => {
     panel.innerHTML = `
         <div class="gha-header">
             <span class="gha-title">Portfolio Insights</span>
+            <button class="gha-btn" id="toggle-visibility-btn">Hide</button>
         </div>
-        <div style="font-size: 13px; color: var(--color-fg-muted);">
+        <div class="gha-content" style="font-size: 13px; color: var(--color-fg-muted);">
             ${message}
         </div>
     `;
     mountPanel(panel);
+    setupHideToggle(panel);
 };
 
 const fetchAnalysis = async (username) => {
